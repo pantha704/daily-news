@@ -1,45 +1,109 @@
 {
   "version": "1.0",
+
+  "_docs": {
+    "description": "Horizon config reference. Copy to config.json, uncomment & tweak.",
+    "defaults_vs_active": {
+      "ai.throttle_sec": "default 0, was set to 2 for Groq free tier, removed after switching to llama-8b (30k req/min)",
+      "ai.analysis_concurrency": "default 1, bumped to 10 for free tier, set lower if rate-limited",
+      "ai.enrichment_concurrency": "default 1, bumped to 5",
+      "ai.model": "changed from llama-3.3-70b-versatile (30 req/min) to llama-3.1-8b-instant (30k req/min)",
+      "ai.max_tokens": "default 4096, bumped to 8192 for longer summaries"
+    }
+  },
+
   "ai": {
     "provider": "openai",
-    "model": "gpt-4",
-    "api_key_env": "OPENAI_API_KEY",
+    "_provider_options": "anthropic | openai | azure | ali | gemini | doubao | minimax | deepseek",
+
+    "model": "llama-3.1-8b-instant",
+    "_model_examples": {
+      "anthropic": "claude-sonnet-4.5-20250929",
+      "openai": "gpt-4o",
+      "gemini": "gemini-2.0-flash",
+      "deepseek": "deepseek-chat",
+      "minimax": "MiniMax-M2.7",
+      "ali": "qwen-plus",
+      "groq_via_openai": "llama-3.3-70b-versatile / llama-3.1-8b-instant"
+    },
+
+    "_base_url_map": {
+      "default": "set automatically per provider",
+      "groq": "https://api.groq.com/openai/v1",
+      "deepseek": "https://api.deepseek.com",
+      "custom_proxy": "https://your-proxy.com/v1"
+    },
+    "base_url": "https://api.groq.com/openai/v1",
+
+    "api_key_env": "GROQ_API_KEY",
+    "_api_key_env_map": {
+      "anthropic": "ANTHROPIC_API_KEY",
+      "openai": "OPENAI_API_KEY",
+      "groq": "GROQ_API_KEY",
+      "deepseek": "DEEPSEEK_API_KEY",
+      "gemini": "GOOGLE_API_KEY",
+      "ali": "DASHSCOPE_API_KEY",
+      "minimax": "MINIMAX_API_KEY",
+      "azure": "AZURE_OPENAI_API_KEY"
+    },
+
     "temperature": 0.3,
-    "max_tokens": 4096,
-    "throttle_sec": 0,
-    "analysis_concurrency": 1,
-    "enrichment_concurrency": 1
+    "max_tokens": 8192,
+    "_max_tokens_default": 4096,
+
+    "languages": ["zh", "en"],
+    "_language_notes": "controls output languages. [] = all, [\"en\"] = English only, [\"zh\",\"en\"] = both",
+
+    "analysis_concurrency": 10,
+    "_analysis_concurrency_default": 1,
+    "enrichment_concurrency": 5,
+    "_enrichment_concurrency_default": 1,
+
+    "_throttle_notes": "seconds between AI calls. 0 = no throttle. 4.5 = safe for 15 req/min free tiers. removed after switching to llama-8b",
+
+    "_azure_specific": {
+      "notes": "only needed when provider=azure",
+      "azure_endpoint_env": "AZURE_OPENAI_ENDPOINT",
+      "api_version": "2024-10-21"
+    }
   },
-  "email": {
-    "enabled": false,
-    "smtp_server": "smtp.qq.com",
-    "smtp_port": 465,
-    "imap_server": "imap.qq.com",
-    "imap_port": 993,
-    "email_address": "xxx@qq.com",
-    "sender_name": "Horizon Daily",
-    "subscribe_keyword": "SUBSCRIBE",
-    "unsubscribe_keyword": "UNSUBSCRIBE"
-  },
+
   "sources": {
     "github": [
       {
         "type": "user_events",
-        "username": "torvalds",
+        "_type_options": "user_events | repo_releases",
+        "username": "karpathy",
         "enabled": true
       },
       {
         "type": "repo_releases",
-        "owner": "astral-sh",
-        "repo": "uv",
+        "owner": "vllm-project",
+        "repo": "vllm",
+        "enabled": true
+      },
+      {
+        "type": "repo_releases",
+        "owner": "sgl-project",
+        "repo": "sglang",
+        "enabled": true
+      },
+      {
+        "type": "repo_releases",
+        "owner": "triton-lang",
+        "repo": "triton",
         "enabled": true
       }
     ],
+
     "hackernews": {
       "enabled": true,
-      "fetch_top_stories": 20,
-      "min_score": 100
+      "fetch_top_stories": 30,
+      "_fetch_top_stories_default": 30,
+      "min_score": 150,
+      "_min_score_default": 100
     },
+
     "rss": [
       {
         "name": "Simon Willison",
@@ -48,12 +112,20 @@
         "category": "ai-tools"
       },
       {
-        "name": "LWN.net (subscriber full-text)",
+        "name": "GitHub Trending - Daily",
+        "url": "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml",
+        "enabled": true,
+        "category": "github-trending"
+      },
+      {
+        "name": "LWN.net",
         "url": "https://lwn.net/headlines/full_text?key=${LWN_KEY}",
-        "enabled": false,
-        "category": "linux"
+        "_note": "403s without LWN_KEY env var. Disable or remove if not subscribed.",
+        "enabled": true,
+        "category": "linux-kernel"
       }
     ],
+
     "reddit": {
       "enabled": true,
       "subreddits": [
@@ -61,23 +133,42 @@
           "subreddit": "MachineLearning",
           "enabled": true,
           "sort": "hot",
+          "_sort_options": "hot | new | top",
+          "time_filter": "day",
+          "_time_filter_options": "hour | day | week | month | year | all",
+          "fetch_limit": 15,
+          "_fetch_limit_default": 15,
+          "min_score": 60,
+          "_min_score_default": 50
+        },
+        {
+          "subreddit": "LocalLLaMA",
+          "enabled": true,
+          "sort": "hot",
           "time_filter": "day",
           "fetch_limit": 15,
-          "min_score": 50
+          "min_score": 60
         }
       ],
-      "users": [
-        {
-          "username": "iamthatis",
-          "enabled": true,
-          "sort": "new",
-          "fetch_limit": 10
-        }
-      ],
-      "fetch_comments": 5
+      "users": [],
+      "fetch_comments": 10,
+      "_fetch_comments_default": 5
     },
-    "twitter": {
+
+    "telegram": {
+      "enabled": true,
+      "channels": [
+        {
+          "channel": "zaihuapd",
+          "enabled": true,
+          "fetch_limit": 20
+        }
+      ]
+    },
+
+    "_twitter_example": {
       "enabled": false,
+      "_note": "requires APIFY_TOKEN in .env",
       "users": ["karpathy", "ylecun"],
       "fetch_limit": 10,
       "fetch_reply_text": false,
@@ -85,22 +176,24 @@
       "max_tweets_to_expand": 10,
       "reply_min_likes": 5
     },
-    "openbb": {
+
+    "_openbb_example": {
       "enabled": false,
-      "fetch_filings": false,
-      "filings_provider": "sec",
+      "_note": "financial news. requires openbb extra: uv sync --extra openbb",
       "watchlists": [
         {
           "name": "megacaps",
-          "enabled": true,
           "provider": "yfinance",
           "fetch_limit": 20,
           "category": "equities",
-          "symbols": ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"]
+          "symbols": ["AAPL", "MSFT", "NVDA"]
         }
-      ]
+      ],
+      "fetch_filings": false,
+      "filings_provider": "sec"
     },
-    "ossinsight": {
+
+    "_ossinsight_example": {
       "enabled": false,
       "period": "past_24_hours",
       "languages": ["All", "Python", "TypeScript"],
@@ -109,46 +202,49 @@
       "max_items": 30
     }
   },
+
   "filtering": {
-    "ai_score_threshold": 6.0,
-    "time_window_hours": 24
+    "ai_score_threshold": 8.0,
+    "_ai_score_threshold_default": 7.0,
+    "_ai_score_threshold_guide": "9-10=groundbreaking, 7-8=high value, 5-6=interesting, 0-2=noise",
+
+    "time_window_hours": 24,
+    "_time_window_hours_default": 24
   },
+
   "webhook": {
-    "enabled": false,
+    "enabled": true,
     "url_env": "HORIZON_WEBHOOK_URL",
-    "delivery": "summary",
-    "overview_position": "first",
-    "platform": "generic",
-    "layout": "markdown",
+    "_note": "set HORIZON_WEBHOOK_URL in .env or this errors out",
+
+    "delivery": "summary_and_items",
+    "_delivery_options": "summary | summary_and_items | all",
+
+    "overview_position": "last",
+    "_overview_position_options": "first | last",
+
+    "platform": "feishu",
+    "_platform_options": "generic | feishu | slack | discord | dingtalk",
+
+    "layout": "collapsible",
+    "_layout_options": "markdown | collapsible",
+
     "fallback_layout": "markdown",
-    "languages": null,
+    "languages": ["zh"],
+
+    "_request_body_note": "platform-specific payload template. supports #{variable} placeholders",
     "request_body": {
       "msg_type": "interactive",
       "card": {
         "schema": "2.0",
-        "config": {
-          "wide_screen_mode": true
-        },
+        "config": { "wide_screen_mode": true },
         "header": {
-          "title": {
-            "tag": "plain_text",
-            "content": "#{message_title}"
-          },
+          "title": { "tag": "plain_text", "content": "#{message_title}" },
           "template": "blue"
         },
         "body": {
           "elements": [
-            {
-              "tag": "markdown",
-              "content": "Horizon生成结果: #{result}\nHorizon日报重要资讯数量: #{important_items}/#{all_items}"
-            },
-            {
-              "tag": "hr"
-            },
-            {
-              "tag": "markdown",
-              "content": "#{summary}"
-            }
+            { "tag": "markdown", "content": "#{summary}" }
           ]
         }
       }

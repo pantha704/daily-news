@@ -1,18 +1,19 @@
 {
   "version": "1.0",
   "ai": {
-    "provider": "deepseek",
-    "model": "deepseek-v4-flash",
-    "base_url": "https://api.deepseek.com",
-    "api_key_env": "OPENAI_API_KEY",
+    "provider": "openai",
+    "model": "llama-3.1-8b-instant",
+    "base_url": "https://api.groq.com/openai/v1",
+    "api_key_env": "GROQ_API_KEY",
     "temperature": 0.3,
-    "max_tokens": 8192,
+    "max_tokens": 2000,
     "languages": [
       "zh",
       "en"
     ],
-    "analysis_concurrency": 5,
-    "enrichment_concurrency": 5
+    "analysis_concurrency": 1,
+    "enrichment_concurrency": 1,
+    "throttle_sec": 10
   },
   "sources": {
     "github": [
@@ -61,7 +62,7 @@
       {
         "name": "LWN.net",
         "url": "https://lwn.net/headlines/full_text?key=${LWN_KEY}",
-        "enabled": true,
+        "enabled": false,
         "category": "linux-kernel"
       }
     ],
@@ -103,8 +104,8 @@
     "ai_score_threshold": 8.0,
     "time_window_hours": 24
   },
-  "webhook": {
-    "enabled": true,
+    "webhook": {
+    "enabled": false,
     "url_env": "HORIZON_WEBHOOK_URL",
     "delivery": "summary_and_items",
     "overview_position": "last",
