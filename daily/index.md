@@ -3,9 +3,6 @@ layout: default
 title: Daily News
 ---
 
-<p style="text-align:right;font-size:.85em;color:#999;margin-bottom:4px;">
-  built upon <a href="https://github.com/Thysrael/Horizon" style="color:#157878;">Horizon</a>
-</p>
 <p style="text-align:right;">
   <button onclick="refreshToday()" id="refreshBtn"
      style="padding:6px 14px;border:1px solid #157878;border-radius:4px;background:#157878;color:#fff;cursor:pointer;font-size:0.9em;">
@@ -66,3 +63,15 @@ async function refreshToday() {
 {% endfor %}
 
 <p style="color:#999;font-size:.85em;">{{ total_items }} articles across {{ day_count }} digest{% if day_count != 1 %}s{% endif %}</p>
+
+<script>
+(function(){
+  var btn = document.querySelector(".page-header .btn");
+  if (btn) {
+    var el = document.createElement("div");
+    el.style.cssText = "text-align:center;margin-top:12px;font-size:.85em;";
+    el.innerHTML = 'built upon <a href="https://github.com/Thysrael/Horizon" style="color:inherit;text-decoration:underline;">Horizon</a>';
+    btn.parentNode.insertBefore(el, btn.nextSibling);
+  }
+})();
+</script>
