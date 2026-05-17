@@ -2,7 +2,7 @@ name: Daily Horizon Summary
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Run daily at 06:00 UTC
+    - cron: '30 0 * * *'  # Run daily at 06:00 IST (00:30 UTC)
   workflow_dispatch:
 
 jobs:

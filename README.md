@@ -29,7 +29,7 @@ flowchart LR
 
 | Method | How |
 |--------|-----|
-| **Daily cron** | `0 6 * * *` — auto-runs every day at 06:00 UTC |
+| **Daily cron** | `30 0 * * *` — auto-runs every day at 06:00 IST (00:30 UTC) |
 | **Manual** | Click "↻ Refresh (today)" on the site → Cloudflare Worker → GitHub API |
 | **Manual (CLI)** | `gh workflow run daily-summary.yml --ref main` |
 
