@@ -156,6 +156,9 @@ class HorizonOrchestrator:
                         parts = summary_content.split("\n", 1)
                         if len(parts) > 1:
                             summary_content = parts[1].strip()
+                            second_line = summary_content.split("\n")[0]
+                            if second_line.startswith("> "):
+                                desc = second_line[2:].strip()
 
                     # Add Jekyll front matter
                     front_matter = (
