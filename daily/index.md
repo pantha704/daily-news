@@ -5,7 +5,7 @@ title: Daily News
 
 <p style="text-align:right;">
   <button onclick="refreshToday()" id="refreshBtn"
-     style="padding:6px 14px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-size:0.9em;">
+     style="padding:6px 14px;border:1px solid #157878;border-radius:4px;background:#157878;color:#fff;cursor:pointer;font-size:0.9em;">
     ↻ Refresh Today
   </button>
   <span id="refreshStatus" style="font-size:0.85em;color:#666;margin-left:8px;"></span>
