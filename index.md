@@ -3,21 +3,74 @@ layout: default
 title: Daily News
 ---
 
-<p style="text-align:right;">
+<p style="text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;">
+  <span id="pipelineStatus" style="font-size:0.85em;"></span>
   <button onclick="refreshToday()" id="refreshBtn"
      style="padding:6px 14px;border:1px solid #157878;border-radius:4px;background:#157878;color:#fff;cursor:pointer;font-size:0.9em;">
     ↻ Refresh (today)
   </button>
-  <span id="refreshStatus" style="font-size:0.85em;color:#666;margin-left:8px;"></span>
+  <span id="refreshStatus" style="font-size:0.85em;color:#666;margin-left:0;"></span>
 </p>
 
 <script>
 const WORKER_URL = "https://daily-news-refresh.pantha704.workers.dev";
+const PIPELINE_ID = "daily-summary.yml";
+const CACHE_KEY = "pipelineStatus";
+
+function setCached(html, ttl) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify({html: html, expiry: Date.now() + ttl}));
+}
+
+function getCached() {
+  try {
+    var c = JSON.parse(localStorage.getItem(CACHE_KEY));
+    if (c && c.expiry > Date.now()) return c.html;
+  } catch(e) {}
+  return null;
+}
+
+function renderStatus(html) {
+  document.getElementById("pipelineStatus").innerHTML = html;
+}
+
+async function checkPipelineStatus() {
+  renderStatus(getCached() || "");
+  try {
+    const r = await fetch("https://api.github.com/repos/pantha704/daily-news/actions/workflows/" + PIPELINE_ID + "/runs?per_page=1&status=in_progress");
+    const data = await r.json();
+    if (data.workflow_runs && data.workflow_runs.length > 0) {
+      var h = '<span style="color:#e05d44;">●</span> running';
+      renderStatus(h);
+      setCached(h, 60000);
+      return;
+    }
+    const r2 = await fetch("https://api.github.com/repos/pantha704/daily-news/actions/workflows/" + PIPELINE_ID + "/runs?per_page=1&status=completed");
+    const d2 = await r2.json();
+    if (d2.workflow_runs && d2.workflow_runs.length > 0) {
+      const last = d2.workflow_runs[0];
+      const t = new Date(last.updated_at);
+      const s = t.toLocaleString(undefined, {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+      var h = '<span style="color:#2ea44f;">●</span> last run: ' + s;
+      renderStatus(h);
+      setCached(h, 300000);
+    } else {
+      var h = '<span style="color:#999;">○</span> idle';
+      renderStatus(h);
+      setCached(h, 300000);
+    }
+  } catch (e) {
+    renderStatus(getCached() || "");
+  }
+}
+
 async function refreshToday() {
   const btn = document.getElementById("refreshBtn");
   const status = document.getElementById("refreshStatus");
   btn.disabled = true;
   status.textContent = "triggering...";
+  var h = '<span style="color:#e05d44;">●</span> running';
+  renderStatus(h);
+  setCached(h, 600000);
   try {
     const r = await fetch(WORKER_URL, { method: "POST" });
     status.textContent = r.ok ? "pipeline started (~10min)" : "failed";
@@ -26,6 +79,8 @@ async function refreshToday() {
   }
   btn.disabled = false;
 }
+
+checkPipelineStatus();
 </script>
 
 {% assign all_posts = site.posts | sort: "date" | reverse %}
