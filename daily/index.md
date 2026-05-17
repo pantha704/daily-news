@@ -12,38 +12,15 @@ title: Daily News
 </p>
 
 <script>
-const REPO = "pantha704/daily-news";
-const WORKFLOW = "daily-summary.yml";
-
-function getToken() {
-  let t = localStorage.getItem("gh_pat");
-  if (!t) {
-    t = prompt("Enter a GitHub fine-grained PAT with Actions:Write access for " + REPO + "\n\nCreate one at: https://github.com/settings/tokens?type=beta");
-    if (t) localStorage.setItem("gh_pat", t);
-  }
-  return t;
-}
-
+const WORKER_URL = "https://daily-news-refresh.pantha704.workers.dev";
 async function refreshToday() {
   const btn = document.getElementById("refreshBtn");
   const status = document.getElementById("refreshStatus");
   btn.disabled = true;
   status.textContent = "triggering...";
-  const token = getToken();
-  if (!token) { status.textContent = "cancelled"; btn.disabled = false; return; }
   try {
-    const r = await fetch("https://api.github.com/repos/" + REPO + "/actions/workflows/" + WORKFLOW + "/dispatches", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
-      body: JSON.stringify({ ref: "main" }),
-    });
-    if (r.ok || r.status === 204) {
-      status.textContent = "triggered — pipeline running (takes ~10min)";
-    } else {
-      const err = await r.text();
-      status.textContent = "failed: " + err;
-      if (r.status === 401 || r.status === 403) { localStorage.removeItem("gh_pat"); }
-    }
+    const r = await fetch(WORKER_URL, { method: "POST" });
+    status.textContent = r.ok ? "pipeline started (~10min)" : "failed";
   } catch (e) {
     status.textContent = "error: " + e.message;
   }
