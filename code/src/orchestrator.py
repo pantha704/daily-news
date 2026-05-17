@@ -141,7 +141,7 @@ class HorizonOrchestrator:
                     from pathlib import Path
 
                     post_filename = f"{today}-summary-{lang}.md"
-                    posts_dir = Path("docs/_posts")
+                    posts_dir = Path("../daily/_posts")
                     posts_dir.mkdir(parents=True, exist_ok=True)
 
                     dest_path = posts_dir / post_filename
@@ -151,6 +151,7 @@ class HorizonOrchestrator:
                         "---\n"
                         "layout: default\n"
                         f"title: \"Horizon Summary: {today} ({lang.upper()})\"\n"
+                        f"description: \"{desc.replace('\"', \"'\")}\"\n"
                         f"date: {today}\n"
                         f"lang: {lang}\n"
                         "---\n\n"
@@ -159,7 +160,10 @@ class HorizonOrchestrator:
                     # Strip leading H1 header to avoid duplication with Jekyll title
                     summary_content = summary
                     first_line = summary_content.strip().split("\n")[0]
-                    if first_line.startswith("# "):
+                    desc = ""
+                    if first_line.startswith("> "):
+                        desc = first_line[2:].strip()
+                    elif first_line.startswith("# "):
                         parts = summary_content.split("\n", 1)
                         if len(parts) > 1:
                             summary_content = parts[1].strip()
