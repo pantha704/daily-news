@@ -151,7 +151,7 @@ class HorizonOrchestrator:
                         "---\n"
                         "layout: default\n"
                         f"title: \"Horizon Summary: {today} ({lang.upper()})\"\n"
-                        f"description: \"{desc.replace('\"', \"'\")}\"\n"
+                        f'description: "{desc.replace(chr(34), chr(39))}"\n'
                         f"date: {today}\n"
                         f"lang: {lang}\n"
                         "---\n\n"
