@@ -146,17 +146,6 @@ class HorizonOrchestrator:
 
                     dest_path = posts_dir / post_filename
 
-                    # Add Jekyll front matter
-                    front_matter = (
-                        "---\n"
-                        "layout: default\n"
-                        f"title: \"Horizon Summary: {today} ({lang.upper()})\"\n"
-                        f'description: "{desc.replace(chr(34), chr(39))}"\n'
-                        f"date: {today}\n"
-                        f"lang: {lang}\n"
-                        "---\n\n"
-                    )
-
                     # Strip leading H1 header to avoid duplication with Jekyll title
                     summary_content = summary
                     first_line = summary_content.strip().split("\n")[0]
@@ -167,6 +156,17 @@ class HorizonOrchestrator:
                         parts = summary_content.split("\n", 1)
                         if len(parts) > 1:
                             summary_content = parts[1].strip()
+
+                    # Add Jekyll front matter
+                    front_matter = (
+                        "---\n"
+                        "layout: default\n"
+                        f"title: \"Horizon Summary: {today} ({lang.upper()})\"\n"
+                        f'description: "{desc.replace(chr(34), chr(39))}"\n'
+                        f"date: {today}\n"
+                        f"lang: {lang}\n"
+                        "---\n\n"
+                    )
 
                     with open(dest_path, "w", encoding="utf-8") as f:
                         f.write(front_matter + summary_content)

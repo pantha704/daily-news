@@ -6,6 +6,40 @@ AI-curated daily tech news briefings. Scrapes HN, RSS, Telegram, GitHub — scor
 
 [![Daily Summary](https://github.com/pantha704/daily-news/actions/workflows/daily-summary.yml/badge.svg)](https://github.com/pantha704/daily-news/actions/workflows/daily-summary.yml)
 
+## Quick Start
+
+```bash
+git clone https://github.com/pantha704/daily-news.git
+cd daily-news
+uv sync
+# Add GROQ_API_KEY to .env, edit data/config.json
+uv run horizon
+```
+
+## Repo structure
+
+```
+.
+├── code/              # Horizon app (Python)
+│   ├── src/           # scrapers, AI scoring, orchestrator
+│   ├── data/          # config.json, summaries
+│   └── .github/       # GitHub Actions workflow
+├── daily/             # Jekyll site → GitHub Pages
+│   ├── _posts/        # generated EN+ZH summaries
+│   ├── index.md       # homepage template
+│   └── _config.yml    # Jekyll config
+└── README.md
+```
+
+## How Horizon works
+
+1. **Fetch** — Pull latest from HN, RSS, Telegram, GitHub concurrently
+2. **Deduplicate** — Merge same story across sources
+3. **Score & filter** — Groq scores 0-10, keep ≥5.0
+4. **Enrich** — Web research for context + community comments
+5. **Summarize** — Structured Markdown with tags, references, discussion
+6. **Deliver** — Copy to `daily/_posts/`, deploy to GitHub Pages
+
 ## Architecture
 
 ```mermaid
@@ -35,21 +69,6 @@ flowchart LR
 
 The Cloudflare Worker (`daily-news-refresh.pantha704.workers.dev`) is a 1KB stateless proxy. Its only job: hide the `GH_TOKEN` so the site button works without a browser prompt. Zero cost on free tier.
 
-## Repo structure
-
-```
-.
-├── code/              # Horizon app (Python)
-│   ├── src/           # scrapers, AI scoring, orchestrator
-│   ├── data/          # config.json, summaries
-│   └── .github/       # GitHub Actions workflow
-├── daily/             # Jekyll site → GitHub Pages
-│   ├── _posts/        # generated EN+ZH summaries
-│   ├── index.md       # homepage template
-│   └── _config.yml    # Jekyll config
-└── README.md
-```
-
 ## Configuration
 
 Key settings in [`code/data/config.json`](code/data/config.json):
@@ -66,25 +85,6 @@ Key settings in [`code/data/config.json`](code/data/config.json):
 - **EN/中文 toggle** — language switcher on article pages
 - **Card-style digest list** — date + description per day
 - **RSS feeds** — `/feed.xml`, `/feed-en.xml`, `/feed-zh.xml`
-
-## How Horizon works
-
-1. **Fetch** — Pull latest from HN, RSS, Telegram, GitHub concurrently
-2. **Deduplicate** — Merge same story across sources
-3. **Score & filter** — Groq scores 0-10, keep ≥5.0
-4. **Enrich** — Web research for context + community comments
-5. **Summarize** — Structured Markdown with tags, references, discussion
-6. **Deliver** — Copy to `daily/_posts/`, deploy to GitHub Pages
-
-## Quick Start
-
-```bash
-git clone https://github.com/pantha704/daily-news.git
-cd daily-news
-uv sync
-# Add GROQ_API_KEY to .env, edit data/config.json
-uv run horizon
-```
 
 ## License
 

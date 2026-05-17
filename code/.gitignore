@@ -44,7 +44,7 @@ data/mcp.secrets.json
 data/mcp-secrets.json
 data/mcp-runs/
 
-docs/_posts/*.md
+../daily/_posts/*.md
 
 # Logs
 logs/*.log
