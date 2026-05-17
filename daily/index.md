@@ -15,14 +15,33 @@ title: Daily News
 <script>
 const WORKER_URL = "https://daily-news-refresh.pantha704.workers.dev";
 const PIPELINE_ID = "daily-summary.yml";
+const CACHE_KEY = "pipelineStatus";
+
+function setCached(html, ttl) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify({html: html, expiry: Date.now() + ttl}));
+}
+
+function getCached() {
+  try {
+    var c = JSON.parse(localStorage.getItem(CACHE_KEY));
+    if (c && c.expiry > Date.now()) return c.html;
+  } catch(e) {}
+  return null;
+}
+
+function renderStatus(html) {
+  document.getElementById("pipelineStatus").innerHTML = html;
+}
 
 async function checkPipelineStatus() {
-  const el = document.getElementById("pipelineStatus");
+  renderStatus(getCached() || "");
   try {
     const r = await fetch("https://api.github.com/repos/pantha704/daily-news/actions/workflows/" + PIPELINE_ID + "/runs?per_page=1&status=in_progress");
     const data = await r.json();
     if (data.workflow_runs && data.workflow_runs.length > 0) {
-      el.innerHTML = '<span style="color:#e05d44;">●</span> running';
+      var h = '<span style="color:#e05d44;">●</span> running';
+      renderStatus(h);
+      setCached(h, 60000);
       return;
     }
     const r2 = await fetch("https://api.github.com/repos/pantha704/daily-news/actions/workflows/" + PIPELINE_ID + "/runs?per_page=1&status=completed");
@@ -31,22 +50,27 @@ async function checkPipelineStatus() {
       const last = d2.workflow_runs[0];
       const t = new Date(last.updated_at);
       const s = t.toLocaleString(undefined, {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
-      el.innerHTML = '<span style="color:#2ea44f;">●</span> last run: ' + s;
+      var h = '<span style="color:#2ea44f;">●</span> last run: ' + s;
+      renderStatus(h);
+      setCached(h, 300000);
     } else {
-      el.innerHTML = '<span style="color:#999;">○</span> idle';
+      var h = '<span style="color:#999;">○</span> idle';
+      renderStatus(h);
+      setCached(h, 300000);
     }
   } catch (e) {
-    el.textContent = "";
+    renderStatus(getCached() || "");
   }
 }
 
 async function refreshToday() {
   const btn = document.getElementById("refreshBtn");
   const status = document.getElementById("refreshStatus");
-  const ps = document.getElementById("pipelineStatus");
   btn.disabled = true;
   status.textContent = "triggering...";
-  ps.innerHTML = '<span style="color:#e05d44;">●</span> running';
+  var h = '<span style="color:#e05d44;">●</span> running';
+  renderStatus(h);
+  setCached(h, 600000);
   try {
     const r = await fetch(WORKER_URL, { method: "POST" });
     status.textContent = r.ok ? "pipeline started (~10min)" : "failed";
