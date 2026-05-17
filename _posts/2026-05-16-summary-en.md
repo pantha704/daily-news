@@ -1,6 +1,7 @@
 ---
 layout: default
 title: "Horizon Summary: 2026-05-16 (EN)"
+description: "From 22 items, 5 important content pieces were selected"
 date: 2026-05-16
 lang: en
 ---
