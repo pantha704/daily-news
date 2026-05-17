@@ -23,6 +23,15 @@ async function checkPipelineStatus() {
     const data = await r.json();
     if (data.workflow_runs && data.workflow_runs.length > 0) {
       el.innerHTML = '<span style="color:#e05d44;">●</span> running';
+      return;
+    }
+    const r2 = await fetch("https://api.github.com/repos/pantha704/daily-news/actions/workflows/" + PIPELINE_ID + "/runs?per_page=1&status=completed");
+    const d2 = await r2.json();
+    if (d2.workflow_runs && d2.workflow_runs.length > 0) {
+      const last = d2.workflow_runs[0];
+      const t = new Date(last.updated_at);
+      const s = t.toLocaleString(undefined, {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+      el.innerHTML = '<span style="color:#2ea44f;">●</span> last run: ' + s;
     } else {
       el.innerHTML = '<span style="color:#999;">○</span> idle';
     }
