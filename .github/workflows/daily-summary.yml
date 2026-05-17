@@ -24,9 +24,11 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Install dependencies
+        working-directory: ./code
         run: uv sync
 
       - name: Run Horizon
+        working-directory: ./code
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: uv run horizon
@@ -38,7 +40,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+          publish_dir: ./daily
           keep_files: true
           commit_message: "Daily Summary: ${{ env.DATE }}"
           publish_branch: gh-pages
