@@ -3,21 +3,41 @@ layout: default
 title: Daily News
 ---
 
-<p style="text-align:right;">
+<p style="text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;">
+  <span id="pipelineStatus" style="font-size:0.85em;"></span>
   <button onclick="refreshToday()" id="refreshBtn"
      style="padding:6px 14px;border:1px solid #157878;border-radius:4px;background:#157878;color:#fff;cursor:pointer;font-size:0.9em;">
     ↻ Refresh (today)
   </button>
-  <span id="refreshStatus" style="font-size:0.85em;color:#666;margin-left:8px;"></span>
+  <span id="refreshStatus" style="font-size:0.85em;color:#666;margin-left:0;"></span>
 </p>
 
 <script>
 const WORKER_URL = "https://daily-news-refresh.pantha704.workers.dev";
+const PIPELINE_ID = "daily-summary.yml";
+
+async function checkPipelineStatus() {
+  const el = document.getElementById("pipelineStatus");
+  try {
+    const r = await fetch("https://api.github.com/repos/pantha704/daily-news/actions/workflows/" + PIPELINE_ID + "/runs?per_page=1&status=in_progress");
+    const data = await r.json();
+    if (data.workflow_runs && data.workflow_runs.length > 0) {
+      el.innerHTML = '<span style="color:#e05d44;">●</span> running';
+    } else {
+      el.innerHTML = '<span style="color:#999;">○</span> idle';
+    }
+  } catch (e) {
+    el.textContent = "";
+  }
+}
+
 async function refreshToday() {
   const btn = document.getElementById("refreshBtn");
   const status = document.getElementById("refreshStatus");
+  const ps = document.getElementById("pipelineStatus");
   btn.disabled = true;
   status.textContent = "triggering...";
+  ps.innerHTML = '<span style="color:#e05d44;">●</span> running';
   try {
     const r = await fetch(WORKER_URL, { method: "POST" });
     status.textContent = r.ok ? "pipeline started (~10min)" : "failed";
@@ -26,6 +46,8 @@ async function refreshToday() {
   }
   btn.disabled = false;
 }
+
+checkPipelineStatus();
 </script>
 
 {% assign all_posts = site.posts | sort: "date" | reverse %}
